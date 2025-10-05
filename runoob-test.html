@@ -1,1 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 适配手机 -->
+    <title>俄语跟读练习</title>
+    <style>
+        body { font-family: Arial; margin: 10px; }
+        textarea { width: 100%; }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+
+<body>
+    <h1>俄语原文朗读与跟读评分</h1>
+    <p>输入俄语文本，然后朗读或跟读练习。</p>
+    <textarea id="text">Привет, как дела?</textarea><br>
+    <button onclick="speak()">朗读原文</button>
+    <button onclick="startRecognition()">开始跟读</button>
+    <button onclick="stopRecognition()">停止录制</button>
+    <div id="transcript"></div>
+    <div id="score"></div>
+
+    <script>
+        if (!('speechSynthesis' in window) || !('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+            alert('浏览器不支持Web Speech API。请用Chrome试试。');
+        }
+        
+        function speak() {
+            var text = document.getElementById('text').value;
+            if (text) {
+                var utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ru-RU';
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        var recognition;
+        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ru-RU';
+            recognition.continuous = false;
+        }
+        
+        function startRecognition() {
+            if (recognition) {
+                recognition.start();
+                document.getElementById('transcript').innerText = '正在录制...';
+            }
+        }
+        
+        function stopRecognition() {
+            if (recognition) recognition.stop();
+        }
+        
+        recognition.onresult = function(event) {
+            var transcript = event.results[0][0].transcript;
+            document.getElementById('transcript').innerText = '你说的: ' + transcript;
+            // 简单评分（与原文比较）
+            var original = document.getElementById('text').value.toLowerCase().trim();
+            var distance = 0; // 简化处理
+            document.getElementById('score').innerText = '分数: ' + (original === transcript.toLowerCase().trim() ? '100' : '0') + '%';
+        };
+    </script>
+</body>
+
+</html>
